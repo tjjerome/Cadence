@@ -1,6 +1,5 @@
 from __future__ import print_function    # (at top of module)
 from spotipy.oauth2 import SpotifyClientCredentials
-import json
 import pickle
 import spotipy
 import sys
@@ -10,6 +9,21 @@ import sys
 
 #The Killers
 #spotify:artist:0C0XlULifJtAgn6ZNCW2eu
+
+def get_artists(uri):
+    username = uri.split(':')[2]
+    playlist_id = uri.split(':')[4]
+    results = sp.user_playlist_tracks(username, playlist_id)['items']
+    unique = set()
+    ids = []
+    for track in results:
+        artists = track['track']['artists']
+        for artist in artists:
+            id = artist['id']
+            if not id in unique:
+                ids.append(artist['id'])
+                unique.add(id)
+    return ids
 
 def get_album_tracks(album):
     tracks = []
@@ -23,10 +37,10 @@ def get_album_tracks(album):
         ids.append(track['id'])
     return ids
 
-def get_artist_albums(id):
+def get_artist_albums(artist):
     albums = []
     ids = []
-    results = sp.artist_albums(id, album_type='album')
+    results = sp.artist_albums(artist, album_type='album')
     albums.extend(results['items'])
     while results['next']:
         results = sp.next(results)
@@ -45,27 +59,34 @@ client_credentials_manager = SpotifyClientCredentials()
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 if len(sys.argv) > 1:
-    id = sys.argv[1]
+    uri = sys.argv[1]
 else:
-    id = '0C0XlULifJtAgn6ZNCW2eu'
+    uri = 'spotify:user:1230457813:playlist:74oqUs80qzfsdCr0Ek9tZV'
 
 n = 0
-    
-albums = get_artist_albums(id)
 
-fout = open('test', 'wb')
+artists = get_artists(uri)
 
-for aid in albums:
-    features = sp.audio_features(get_album_tracks(aid))
-    
-    for track in features:
-        del track['type']
-        del track['track_href']
-        del track['analysis_url']
-        del track['uri']
+fout = open('data', 'wb')
 
-    pickle.dump(features, fout)
-    n += 1
+for artist in artists:
+
+    albums = get_artist_albums(artist)
+
+    for album in albums:
+        results = get_album_tracks(album)
+        if len(results) >= 50: continue
+        tracks = sp.audio_features(results)
+        
+        for track in tracks:
+            if track:
+                track.pop('type', None)
+                track.pop('track_href', None)
+                track.pop('analysis_url', None)
+                track.pop('uri', None)
+            
+        pickle.dump(tracks, fout)
+        n += 1
 
 fout.close()
 

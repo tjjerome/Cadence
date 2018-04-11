@@ -2,8 +2,8 @@ import pickle
 import json
 import sys
 
-fin = open('test', 'rb')
-fout = open('test2.json', 'w')
+fin = open('data', 'rb')
+fout = open('data.json', 'w')
 
 while True:
     try:
