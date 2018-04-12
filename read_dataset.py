@@ -2,8 +2,14 @@ import pickle
 import json
 import sys
 
-fin = open('data', 'rb')
-fout = open('data.json', 'w')
+if len(sys.argv) > 1:
+    input = sys.argv[1]
+else:
+    print("Usage: python3 read_dataset.py <inputfile>")
+    sys.exit()
+
+fin = open(input, 'rb')
+fout = open('{}.json'.format(input), 'w')
 
 while True:
     try:
