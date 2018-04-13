@@ -3,9 +3,6 @@ import pickle
 import numpy as np
 import tensorflow as tf
 
-max_length = 49
-batch_size = 10
-
 def str2int(s):
     chars = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM"
     i = 0
@@ -26,48 +23,39 @@ def get_song_vector(song):
 
 # Defining data
 
-fin = open('train', 'rb')
-
-album_stream = []
-
-while True:
-    try:
-        album = pickle.load(fin)
-        song_stream = []
-    
-        for i in range(max_length):
+class datastream():
+    def __init__(self, inputfile):
+        fin = open(inputfile, 'rb')
+        self.max_length = 49
+        self.batch_size = 10
+        album_stream = []
+        while True:
             try:
-                song_stream.append(get_song_vector(album[i]))
-            except IndexError:
-                song_stream.append([0] * len(song_stream[0]))
+                album = pickle.load(fin)
+                song_stream = []
+                
+                for i in range(self.max_length):
+                    try:
+                        song_stream.append(get_song_vector(album[i]))
+                    except IndexError:
+                        song_stream.append([0] * len(song_stream[0]))
+                        
+                album_stream.append(song_stream)
+            except EOFError:
+                break
+            
+        self.num_features = len(song_stream[0])
         
-        album_stream.append(song_stream)
-    except EOFError:
-        break
-    
-length = len(song_stream)
-num_features = len(song_stream[0])
+        album_stream = np.array(album_stream)
+        
+        all_data = tf.data.Dataset.from_tensor_slices(album_stream)
+        dataset = all_data.batch(self.batch_size)
+        self.iterator = dataset.make_initializable_iterator()
+        self.next_batch = tf.transpose(self.iterator.get_next(), [1,0,2])
 
-album_stream = np.array(album_stream)
+# Building a model
 
-#album_stream = np.swapaxes(album_stream,0,1)
-print(album_stream.shape)
 
-weights = {
-    'out': tf.Variable(tf.random_normal([max_length]))
-}
-biases = {
-    'out': tf.constant(0.0)
-}
-
-songs = tf.placeholder("float")
-
-all_data = tf.data.Dataset.from_tensor_slices(songs)
-dataset = all_data.batch(batch_size)
-iterator = dataset.make_initializable_iterator()
-next_song = iterator.get_next()
-
-# Building a graph
 
 """lstm = tf.contrib.rnn.BasicLSTMCell(max_length)
 hidden_state = tf.zeros([None, lstm.state_size])
@@ -80,8 +68,13 @@ loss = 0.0
 # Loss
 
 
+# Define Training
+
+
 # Run Session
 sess = tf.Session()
 
-sess.run(iterator.initializer, feed_dict={songs: album_stream})
-print(sess.run(next_song).shape)
+train_input = datastream('train')
+
+sess.run(train_input.iterator.initializer)
+print(sess.run(train_input.next_batch).shape)
