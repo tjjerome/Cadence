@@ -25,7 +25,7 @@ def str2int(s):
     return i % 1000003
 
 def get_song_vector(song):
-    song.pop('id',None)
+    song['id'] = str2int(song['id'])
     vec = list(song.items())
     vec.sort()
     for i in range(len(vec)):

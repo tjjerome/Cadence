@@ -74,6 +74,7 @@ for artist in artists:
     albums = get_artist_albums(artist)
 
     for album in albums:
+        bad_track = False
         results = get_album_tracks(album)
         if len(results) >= 50: continue
         tracks = sp.audio_features(results)
@@ -84,7 +85,9 @@ for artist in artists:
                 track.pop('track_href', None)
                 track.pop('analysis_url', None)
                 track.pop('uri', None)
+            if len(track) != 14: bad_track = True
             
+        if bad_track: continue
         pickle.dump(tracks, fout)
         n += 1
 

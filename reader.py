@@ -3,6 +3,8 @@ import pickle
 import sys
 import util
 
+from random import shuffle
+
 class datastream(object):
     def __init__(self, inputfile, config):
         fin = open(inputfile, 'rb')
@@ -31,12 +33,29 @@ class datastream(object):
         if self.batch_id == len(self.album_stream):
             self.batch_id = 0
             
-        albums = (self.album_stream[self.batch_id:min(
+        data = np.array(self.album_stream[self.batch_id:min(
             self.batch_id + batch_size,
             len(self.album_stream))])
-        albumlen = (self.lengths[self.batch_id:min(
-            self.batch_id + batch_size,
-            len(self.lengths))])
+        #albumlen = (self.lengths[self.batch_id:min(
+            #self.batch_id + batch_size,
+            #len(self.lengths))])
+        target = data[:,:,4]
+
+        data = np.swapaxes(data,0,1)
+        shuffle(data)
+        data = np.swapaxes(data,0,1)
+            
         self.batch_id = min(self.batch_id + batch_size,
                             len(self.album_stream))
-        return albums, albumlen
+        return data, target
+
+    def all(self):
+        data = np.array(album_stream)
+        
+        target = data[:,:,4]
+
+        data = np.swapaxes(data,0,1)
+        shuffle(data)
+        data = np.swapaxes(data,0,1)
+    
+        return data, target
