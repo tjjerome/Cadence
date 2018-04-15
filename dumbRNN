@@ -1,0 +1,48 @@
+class RNN(object):
+    def __init__(self, input, training):
+        inputs = targets = input.next_batch
+
+        self.cell = tf.contrib.cudnn_rnn.CudnnLSTM(num_layers, hidden_size)
+        
+        output, state = tf.nn.dynamic_rnn(self.cell, inputs, initial_state
+        
+        softmax_w = tf.get_variable("softmax_w", [hidden_size, input.num_features])
+        softmax_b = tf.get_variable("softmax_b", [input.num_features])
+        logits = tf.nn.xw_plus_b(output, softmax_w, softmax_b)
+        #possible reshape step here, do a print in testing to see what it looks like
+
+        loss = tf.contrib.seq2seq.sequence_loss(logits, targets, tf.ones([batch_size, max_length]), average_across_timesteps=False)
+        
+        self.cost = tf.reduce_sum(loss)
+        self.final_state = state
+        
+        if not training:
+            return
+
+        tvars = tf.trainable_variables()
+        grads, _ = tf.clip_by_global_norm(tf.gradients(self.cost, tvars), max_grad_norm)
+
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+        self.train_op = optimizer.apply_gradients(list(zip(grads, tvars)), global_step=tf.train.get_or_create_global_step())
+
+    """def build_graph(self, inputs, training):
+        #do a print here to check for transposes
+        
+        self.cell = tf.contrib.cudnn_rnn.CudnnLSTM(num_layers, hidden_size)
+        
+        params_size_t = self.cell.count_params()
+        
+        self.rnn_params = tf.get_variable(
+            "lstm_params",
+            initializer=tf.random_uniform([], -init_scale, init_scale),
+            validate_shape=False)
+        c = tf.zeros([num_layers, batch_size, hidden_size], tf.float32)
+        h = tf.zeros([num_layers, batch_size, hidden_size], tf.float32)
+
+        self.initial_state = (tf.contrib.rnn.LSTMStateTuple(h=h, c=c),)
+        outputs, h, c = self.cell(inputs, h, c, self.rnn_params, training)
+
+        #check output size again here
+        
+        return outputs, (tf.contrib.rnn.LSTMStateTuple(h=h, c=c),)"""
+
