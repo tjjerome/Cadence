@@ -1,8 +1,8 @@
 class config(object):
   max_length = 49
   #max_grad_norm = 5
-  batch_size = 20
-  training_steps = 10000
+  batch_size = 70
+  training_steps = 5000
   hidden_size = 200
   #init_scale = 0.1
   learning_rate = 0.01

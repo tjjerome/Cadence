@@ -10,21 +10,41 @@ class datastream(object):
         fin = open(inputfile, 'rb')
         self.album_stream = []
         self.lengths = []
+        self.targets = np.array([]).reshape(0,config.max_length,config.max_length)
+        
         while True:
             try:
                 album = pickle.load(fin)
+                songs = []
                 song_stream = []
-                
+                target = np.zeros((1, config.max_length, config.max_length))
+
+                # Convert each song to a vector representation
                 for song in album:
-                    song_stream.append(util.get_song_vector(song))
-                self.lengths.append(len(song_stream))
+                    songs.append(util.get_song_vector(song))
+
+                # Keep track of the length of each album
+                self.lengths.append(len(songs))
+
+                # Create a shuffling index
+                indeces = np.arange(len(songs))
+                shuffle(indeces)
+
+                # Shuffle the album by the index and keep track of the indeces
+                for i in range(len(songs)):
+                    song_stream.append(songs[indeces[i]])
+                    target[0, i, len(songs):] = 0.1 # differ from padding
+                    target[0, i, indeces[i]] = 1.0
+
+                # Pad the array with zeros
                 for i in range(config.max_length - len(song_stream)):
                     song_stream.append([0]*len(song_stream[0]))
                 
                 self.album_stream.append(song_stream)
+                self.targets = np.vstack((self.targets, target))
             except EOFError:
                 break
-            
+    
         self.num_features = len(song_stream[0])
         self.batch_id = 0
         fin.close()
@@ -36,26 +56,22 @@ class datastream(object):
         data = np.array(self.album_stream[self.batch_id:min(
             self.batch_id + batch_size,
             len(self.album_stream))])
-        #albumlen = (self.lengths[self.batch_id:min(
-            #self.batch_id + batch_size,
-            #len(self.lengths))])
-        target = data[:,:,4]
-
-        data = np.swapaxes(data,0,1)
-        shuffle(data)
-        data = np.swapaxes(data,0,1)
+        length = np.array(self.lengths[self.batch_id:min(
+            self.batch_id + batch_size,
+            len(self.lengths))])
+        target = self.targets[self.batch_id:min(
+            self.batch_id + batch_size,
+            len(self.album_stream))]
             
         self.batch_id = min(self.batch_id + batch_size,
                             len(self.album_stream))
-        return data, target
+        return data, target, length
 
     def all(self):
-        data = np.array(album_stream)
+        data = np.array(self.album_stream)
         
-        target = data[:,:,4]
+        target = self.targets
 
-        data = np.swapaxes(data,0,1)
-        shuffle(data)
-        data = np.swapaxes(data,0,1)
+        length = np.array(self.lengths)
     
-        return data, target
+        return data, target, length
