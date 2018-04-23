@@ -7,6 +7,7 @@ class dRNN:
         self.data = data
         self.target = target
         self.length = length
+        self.rate = config.learning_rate
         self.hidden_size = config.hidden_size
         self.prediction
         self.optimize
@@ -19,8 +20,12 @@ class dRNN:
         num_features = int(self.data.get_shape()[2])
 
         w = tf.Variable(tf.random_uniform([self.hidden_size,
-                                           target_size]))
-        b = tf.Variable(tf.constant(1.0, shape=[target_size]))
+                                           target_size]),
+                        trainable=True,
+                        name='weights')
+        b = tf.Variable(tf.constant(1.0, shape=[target_size]),
+                        trainable=True,
+                        name='bias')
         
         cell = tf.contrib.rnn.LSTMCell(self.hidden_size,
                                        state_is_tuple=True)
@@ -41,20 +46,31 @@ class dRNN:
         
     @define_scope
     def optimize(self):
-        #num_features = int(self.data.get_shape()[2])
-        #logits = tf.reshape(self.prediction, [1, -1, num_features])
-        loss = -tf.reduce_mean(self.target * tf.log(tf.clip_by_value(
-            self.prediction, 1e-10, 1.0)))
+        loss = tf.contrib.seq2seq.sequence_loss(
+            self.prediction,
+            self.target,
+            tf.sequence_mask(self.length,
+                             self.data.get_shape()[1],
+                             tf.float32),
+            average_across_timesteps = False,
+            average_across_batch = False)
         
-        optimizer = tf.train.AdamOptimizer()
+        optimizer = tf.train.AdamOptimizer(self.rate)
 
         return optimizer.minimize(loss)
 
     @define_scope
     def error(self):
-        #mistakes = tf.not_equal(tf.argmax(self.target,1),
-                                #tf.argmax(self.prediction,1))
-        loss = -tf.reduce_sum(self.target * tf.log(tf.clip_by_value(
-            self.prediction, 1e-10, 1.0)))
-        return loss
-        #return tf.reduce_mean(tf.cast(mistakes, tf.float32))
+        mistakes = tf.cast(tf.not_equal(self.target,
+                                        tf.argmax(self.prediction,
+                                                  2,
+                                                  output_type=tf.int32)),
+                           tf.float32)
+
+        # Ignore padded cells
+        mask = tf.sequence_mask(self.length,
+                                self.data.get_shape()[1],
+                                tf.int32)
+        padded, mistakes = tf.dynamic_partition(mistakes, mask, 2)
+        
+        return tf.reduce_mean(mistakes)

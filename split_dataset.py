@@ -18,7 +18,7 @@ test_n = 0
 
 while True:
     try:
-        if np.random.binomial(1,0.2) == 0:
+        if np.random.binomial(1,0.1) == 0:
             pickle.dump(pickle.load(fin), train)
             train_n += 1
             
