@@ -7,6 +7,8 @@ class dRNN:
         self.data = data
         self.target = target
         self.length = length
+        #self.global_step = tf.Variable(tf.constant(0, dtype=tf.int64))
+        self.keep_prob = config.keep_prob
         self.rate = config.learning_rate
         self.hidden_size = config.hidden_size
         self.prediction
@@ -19,30 +21,48 @@ class dRNN:
         target_size = int(self.target.get_shape()[1])
         num_features = int(self.data.get_shape()[2])
 
-        w = tf.Variable(tf.random_uniform([self.hidden_size,
+        w_fw = tf.Variable(tf.random_uniform([self.hidden_size,
                                            target_size]),
                         trainable=True,
                         name='weights')
-        b = tf.Variable(tf.constant(1.0, shape=[target_size]),
+        b_fw = tf.Variable(tf.constant(1.0, shape=[target_size]),
                         trainable=True,
                         name='bias')
         
-        cell = tf.contrib.rnn.LSTMCell(self.hidden_size,
+        cell_fw = tf.contrib.rnn.LSTMCell(self.hidden_size,
                                        state_is_tuple=True)
+
+        w_bw = tf.Variable(tf.random_uniform([self.hidden_size,
+                                           target_size]),
+                        trainable=True,
+                        name='weights')
+        b_bw = tf.Variable(tf.constant(1.0, shape=[target_size]),
+                        trainable=True,
+                        name='bias')
         
-        outputs, states = tf.nn.dynamic_rnn(cell, self.data,
-                                            sequence_length=self.length,
-                                            dtype=tf.float32)
+        cell_bw = tf.contrib.rnn.LSTMCell(self.hidden_size,
+                                       state_is_tuple=True)
 
-        #outputs = tf.transpose(outputs, [1,0,2])
-
-        outputs = tf.reshape(outputs, [-1, self.hidden_size])
-
-        #ten = tf.gather(outputs, 9)
+        if self.keep_prob < 0.99:
+            cell_fw = tf.contrib.rnn.DropoutWrapper(
+                cell_fw, output_keep_prob=self.keep_prob)
+            cell_bw = tf.contrib.rnn.DropoutWrapper(
+                cell_bw, output_keep_prob=self.keep_prob)
         
-        outputs = tf.nn.softmax(tf.nn.xw_plus_b(outputs, w, b))
+        outputs, states = tf.nn.bidirectional_dynamic_rnn(
+            cell_fw, cell_bw, self.data,
+            sequence_length=self.length,
+            dtype=tf.float32)
 
-        return tf.reshape(outputs, [-1, data_size, target_size])
+        output_fw, output_bw = outputs
+        
+        output_fw = tf.reshape(output_fw, [-1, self.hidden_size])
+        output_bw = tf.reshape(output_bw, [-1, self.hidden_size])
+
+        output = tf.nn.softmax(tf.add(tf.nn.xw_plus_b(output_fw, w_fw, b_fw),
+                                      tf.nn.xw_plus_b(output_bw, w_bw, b_bw)))
+
+        return tf.reshape(output, [-1, data_size, target_size])
         
     @define_scope
     def optimize(self):
@@ -61,6 +81,7 @@ class dRNN:
 
     @define_scope
     def error(self):
+        self.keep_prob = 1
         mistakes = tf.cast(tf.not_equal(self.target,
                                         tf.argmax(self.prediction,
                                                   2,

@@ -101,7 +101,6 @@ ENV/
 .mypy_cache/
 
 # Project specifics
+error/
 credentials
-data
-test
-train
+*.json

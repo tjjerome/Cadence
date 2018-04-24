@@ -1,8 +1,7 @@
 class config(object):
   max_length = 49
-  batch_size = 200
-  training_steps = 20000
-  hidden_size = 500
+  batch_size = 100
+  training_steps = 25000
+  hidden_size = 600
   learning_rate = 0.001
-  #num_layers = 2
-  #keep_prob = 1.0
+  keep_prob = 0.5
