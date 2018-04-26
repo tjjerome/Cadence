@@ -16,7 +16,6 @@ class datastream(object):
             try:
                 album = pickle.load(fin)
                 songs = []
-                song_stream = []
                 target = np.zeros((1, config.max_length))
 
                 # Convert each song to a vector representation
@@ -26,31 +25,25 @@ class datastream(object):
                 # Keep track of the length of each album
                 self.lengths.append(len(songs))
 
-                # Create a shuffling index, skip the first one
-                indices = np.arange(1, len(songs))
-                shuffle(indices)
-                song_stream.append(songs[0])
-
-                # Shuffle the album by the index and keep track of the indeces
-                for i in range(len(songs)-1):
-                    song_stream.append(songs[indices[i]])
-                    target[0, indices[i]] = i+1
+                # Fill target array with album indices
+                for i in range(len(songs)):
+                    target[0, i] = i
 
                 # Pad the array with zeros
-                for i in range(config.max_length - len(song_stream)):
-                    song_stream.append([0]*len(song_stream[0]))
+                for i in range(config.max_length - len(songs)):
+                    songs.append([0]*len(songs[0]))
                 
-                albums.append(song_stream)
+                albums.append(songs)
                 self.targets = np.vstack((self.targets, target))
             except EOFError:
                 break
     
-        self.num_features = len(song_stream[0])
+        self.num_features = len(songs[0])
         self.batch_id = 0
         self.album_stream = np.array(albums)
         fin.close()
         
-    def next(self, batch_size=1):
+    def next(self, batch_size=1, swaps=0.0):
         if self.batch_id == len(self.album_stream):
             self.batch_id = 0
             
@@ -63,18 +56,42 @@ class datastream(object):
         length = np.array(self.lengths[self.batch_id:min(
             self.batch_id + batch_size,
             len(self.lengths))])
+
+        if swaps > 0.0:
+            if swaps > 1.0: swaps = 1.0
+            for i in range(len(data)):
+                num_swaps = int(swaps*(length[i]/2)-1)
+                indices = np.arange(1, length[i]-1)
+                shuffle(indices)
+                for j in range(num_swaps):
+                    index1 = indices[2*j]
+                    index2 = indices[2*j+1]
+                    data[i][[index1, index2]] = data[i][[index2, index1]]
+                    target[i][[index1, index2]] = target[i][[index2, index1]]
             
         self.batch_id = min(self.batch_id + batch_size,
                             len(self.album_stream))
         return data, target, length
 
-    def all(self):
+    def all(self, swaps=0.0):
         data = self.album_stream
         
         target = self.targets
 
         length = np.array(self.lengths)
-    
+        
+        if swaps > 0.0:
+            if swaps > 1.0: swaps = 1.0
+            for i in range(len(data)):
+                num_swaps = int(swaps*(length[i]/2)-1)
+                indices = np.arange(1, length[i]-1)
+                shuffle(indices)
+                for j in range(num_swaps):
+                    index1 = indices[2*j]
+                    index2 = indices[2*j+1]
+                    data[i][[index1, index2]] = data[i][[index2, index1]]
+                    target[i][[index1, index2]] = target[i][[index2, index1]]
+                    
         return data, target, length
 
     def norm_params(self):

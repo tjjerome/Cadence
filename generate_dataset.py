@@ -3,6 +3,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import pickle
 import spotipy
 import sys
+import numpy as np
 
 #Hot Fuss
 #spotify:album:4undIeGmofnAYKhnDclN1w
@@ -15,6 +16,7 @@ def get_artists(uri):
     playlist_id = uri.split(':')[4]
     results = sp.user_playlist_tracks(username, playlist_id)['items']
     unique = set()
+    full = False
     ids = []
     for track in results:
         artists = track['track']['artists']
@@ -23,6 +25,14 @@ def get_artists(uri):
             if not id in unique:
                 ids.append(artist['id'])
                 unique.add(id)
+                if len(unique) > 499:
+                    full = True
+                else:
+                    related_artists = sp.artist_related_artists(id)['artists']
+                    artists.extend(related_artists)
+
+            if full: break
+        if full: break
     return ids
 
 def get_album_tracks(album):
@@ -63,8 +73,6 @@ if len(sys.argv) > 1:
 else:
     uri = 'spotify:user:1230457813:playlist:74oqUs80qzfsdCr0Ek9tZV'
 
-n = 0
-
 artists = get_artists(uri)
 
 fout = open('data', 'wb')
@@ -89,8 +97,35 @@ for artist in artists:
             
         if bad_track: continue
         pickle.dump(tracks, fout)
-        n += 1
 
 fout.close()
 
+fin = open('data', 'rb')
+test = open('test', 'wb')
+train = open('train', 'wb')
+
+n = 0
+train_n = 0
+test_n = 0
+
+while True:
+    try:
+        if np.random.binomial(1,0.1) == 0:
+            pickle.dump(pickle.load(fin), train)
+            train_n += 1
+            
+        else:
+            pickle.dump(pickle.load(fin), test)
+            test_n += 1
+            
+        n += 1
+        
+    except EOFError:
+        break
+
 print('{} albums processed'.format(n))
+print('Train - {}, Test - {}'.format(train_n, test_n))
+        
+fin.close()
+test.close()
+train.close()

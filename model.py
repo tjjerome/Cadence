@@ -81,6 +81,7 @@ class dRNN:
 
     @define_scope
     def error(self):
+        kp = self.keep_prob
         self.keep_prob = 1
         mistakes = tf.cast(tf.not_equal(self.target,
                                         tf.argmax(self.prediction,
@@ -88,6 +89,8 @@ class dRNN:
                                                   output_type=tf.int32)),
                            tf.float32)
 
+        self.keep_prob = kp
+        
         # Ignore padded cells
         mask = tf.sequence_mask(self.length,
                                 self.data.get_shape()[1],

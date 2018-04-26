@@ -104,3 +104,5 @@ ENV/
 error/
 credentials
 *.json
+*.csv
+*.bak
