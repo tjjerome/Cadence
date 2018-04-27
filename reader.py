@@ -43,7 +43,7 @@ class datastream(object):
         self.album_stream = np.array(albums)
         fin.close()
         
-    def next(self, batch_size=1, swaps=0.0):
+    def next(self, batch_size=1, entropy=0.0):
         if self.batch_id == len(self.album_stream):
             self.batch_id = 0
             
@@ -57,35 +57,41 @@ class datastream(object):
             self.batch_id + batch_size,
             len(self.lengths))])
 
-        if swaps > 0.0:
-            if swaps > 1.0: swaps = 1.0
+        if entropy > 0.0:
+            if entropy > 1.0: entropy = 1.0
             for i in range(len(data)):
-                num_swaps = int(swaps*(length[i]/2)-1)
+                num_swaps = int(entropy*(length[i]-2))
                 indices = np.arange(1, length[i]-1)
                 shuffle(indices)
+                more_indices = np.arange(1, length[i]-1)
+                shuffle(more_indices)
+                indices = np.append(indices, more_indices)
                 for j in range(num_swaps):
                     index1 = indices[2*j]
                     index2 = indices[2*j+1]
                     data[i][[index1, index2]] = data[i][[index2, index1]]
                     target[i][[index1, index2]] = target[i][[index2, index1]]
-            
+                 
         self.batch_id = min(self.batch_id + batch_size,
                             len(self.album_stream))
         return data, target, length
 
-    def all(self, swaps=0.0):
+    def all(self, entropy=0.0):
         data = self.album_stream
         
         target = self.targets
 
         length = np.array(self.lengths)
         
-        if swaps > 0.0:
-            if swaps > 1.0: swaps = 1.0
+        if entropy > 0.0:
+            if entropy > 1.0: entropy = 1.0
             for i in range(len(data)):
-                num_swaps = int(swaps*(length[i]/2)-1)
+                num_swaps = int(entropy*(length[i]-2))
                 indices = np.arange(1, length[i]-1)
                 shuffle(indices)
+                more_indices = np.arange(1, length[i]-1)
+                shuffle(more_indices)
+                indices = np.append(indices, more_indices)
                 for j in range(num_swaps):
                     index1 = indices[2*j]
                     index2 = indices[2*j+1]
@@ -106,7 +112,7 @@ class datastream(object):
             var.append(np.var(a[:self.lengths[i],:],
                               axis=0))
 
-        # Get mean an std for dataset
+        # Get mean and std for dataset
         mean = np.mean(avg, axis=0)
         std = np.sqrt(np.mean(var, axis=0))
 

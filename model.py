@@ -45,9 +45,13 @@ class dRNN:
 
         if self.keep_prob < 0.99:
             cell_fw = tf.contrib.rnn.DropoutWrapper(
-                cell_fw, output_keep_prob=self.keep_prob)
+                cell_fw, output_keep_prob=self.keep_prob,
+                variational_recurrent=True,
+                dtype=tf.float32)
             cell_bw = tf.contrib.rnn.DropoutWrapper(
-                cell_bw, output_keep_prob=self.keep_prob)
+                cell_bw, output_keep_prob=self.keep_prob,
+                variational_recurrent=True,
+                dtype=tf.float32)
         
         outputs, states = tf.nn.bidirectional_dynamic_rnn(
             cell_fw, cell_bw, self.data,

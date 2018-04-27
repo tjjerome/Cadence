@@ -38,7 +38,8 @@ train_data, train_target, train_length = train_input.all(1.0)
 test_data, test_target, test_length = test_input.all(1.0)
 
 for step in range(steps):
-    data, target, length = train_input.next(config().batch_size, 4*step/steps)
+    data, target, length = train_input.next(config().batch_size,
+                                            step/config().entropy_saturation)
 
     sess.run(m.optimize, feed_dict={x:data, y:target, l:length})
 

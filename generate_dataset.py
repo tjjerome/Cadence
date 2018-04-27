@@ -25,7 +25,7 @@ def get_artists(uri):
             if not id in unique:
                 ids.append(artist['id'])
                 unique.add(id)
-                if len(unique) > 499:
+                if len(unique) >= 100:
                     full = True
                 else:
                     related_artists = sp.artist_related_artists(id)['artists']
