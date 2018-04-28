@@ -1,45 +1,73 @@
+## @package model
+#  Sets up the tensorflow graph
+
 import tensorflow as tf
 from util import define_scope
 
+## Recursive neural network class
 class dRNN:
-
+    
+    ## The constructor
+    #  @param data The input data
+    #  @param target The targets to train to
+    #  @param length A vector of album lengths
+    #  @param config An object with configuration variables defined in config.py
     def __init__(self, data, target, length, config):
+        ## Stores input data
         self.data = data
+        ## Stores the targets
         self.target = target
+        ## Stores the length vector
         self.length = length
-        #self.global_step = tf.Variable(tf.constant(0, dtype=tf.int64))
+        ## Stores the dropout probability from the config
         self.keep_prob = config.keep_prob
+        ## Stores the learning rate from the config
         self.rate = config.learning_rate
+        ## Stores the hidden size from the config
         self.hidden_size = config.hidden_size
+        ## Initializes the prediction function with the Tensorflow session
         self.prediction
+        ## Initializes the optimize function with the Tensorflow session
         self.optimize
+        ## Initializes the error function with the Tensorflow session
         self.error
 
+    ## Runs the LSTM cells over the input data
+    #  @returns a (batch_size, max_length, max_length) tensor with prediction values
     @define_scope
     def prediction(self):
+        ## The max length of the albums in the mini batch
         data_size = int(self.data.get_shape()[1])
+        ## The size of the target array
         target_size = int(self.target.get_shape()[1])
+        ## The number of features in each song vector
         num_features = int(self.data.get_shape()[2])
 
+        ## Weights for the forward pass
         w_fw = tf.Variable(tf.random_uniform([self.hidden_size,
                                            target_size]),
                         trainable=True,
                         name='weights')
+        ## Bias for the forward pass
         b_fw = tf.Variable(tf.constant(1.0, shape=[target_size]),
                         trainable=True,
                         name='bias')
         
+        ## The LSTM cell for the forward pass
         cell_fw = tf.contrib.rnn.LSTMCell(self.hidden_size,
                                        state_is_tuple=True)
 
+        ## Weights for the backward pass
         w_bw = tf.Variable(tf.random_uniform([self.hidden_size,
                                            target_size]),
                         trainable=True,
                         name='weights')
+        ## Bias for the backward pass
         b_bw = tf.Variable(tf.constant(1.0, shape=[target_size]),
                         trainable=True,
                         name='bias')
         
+        ## The LSTM cell for the backward pass
         cell_bw = tf.contrib.rnn.LSTMCell(self.hidden_size,
                                        state_is_tuple=True)
 
@@ -68,6 +96,7 @@ class dRNN:
 
         return tf.reshape(output, [-1, data_size, target_size])
         
+    ## Defines the loss function and the optmizer operation
     @define_scope
     def optimize(self):
         loss = tf.contrib.seq2seq.sequence_loss(
@@ -83,9 +112,14 @@ class dRNN:
 
         return optimizer.minimize(loss)
 
+    ## Defines the error used to measure network performance
+    #  @returns The mean value of mistakes over the dataset
     @define_scope
     def error(self):
+        ## Remembers the dropout probability to turn back on after the error test
         kp = self.keep_prob
+
+        # turn off the dropout
         self.keep_prob = 1
         mistakes = tf.cast(tf.not_equal(self.target,
                                         tf.argmax(self.prediction,
@@ -93,6 +127,7 @@ class dRNN:
                                                   output_type=tf.int32)),
                            tf.float32)
 
+        # turn dropout back on
         self.keep_prob = kp
         
         # Ignore padded cells

@@ -1,3 +1,6 @@
+## @package reader
+#  Contains instructions on how to read the dataset
+
 import numpy as np
 import pickle
 import sys
@@ -5,11 +8,19 @@ import util
 
 from random import shuffle
 
+## An object to hold the data in memory
 class datastream(object):
+    ## The constructor
+    #  @param inputfile The name of the file to read
+    #  @param config An object containing configuration variables defined in config.py
     def __init__(self, inputfile, config):
+        ## input file object
         fin = open(inputfile, 'rb')
+        ## A list to read albums into
         albums = []
+        ## A list of album lengths
         self.lengths = []
+        ## An empty array to store targets in
         self.targets = np.array([]).reshape(0, config.max_length)
         
         while True:
@@ -38,11 +49,18 @@ class datastream(object):
             except EOFError:
                 break
     
+        ## The number of features in the song vector
         self.num_features = len(songs[0])
+        ## An index to keep track of where to pull mini-batches from
         self.batch_id = 0
+        ## Holds the album data
         self.album_stream = np.array(albums)
         fin.close()
         
+    ## Returns a mini-batch of data
+    #  @param batch_size The mini-batch size
+    #  @param entropy The degree of which to shuffle the data
+    #  @returns An array of shuffled albums
     def next(self, batch_size=1, entropy=0.0):
         if self.batch_id == len(self.album_stream):
             self.batch_id = 0
@@ -76,6 +94,9 @@ class datastream(object):
                             len(self.album_stream))
         return data, target, length
 
+    ## Returns all of the data
+    #  @param entropy The degree of which to shuffle the data
+    #  @returns An array containing all of the albums in the dataset
     def all(self, entropy=0.0):
         data = self.album_stream
         
@@ -100,6 +121,8 @@ class datastream(object):
                     
         return data, target, length
 
+    ## Gets parameters to help normalize the data
+    #  @returns A vector of means for each song feature, A vector of standard deviations for each song feature
     def norm_params(self):
         avg = []
         var = []
@@ -118,6 +141,7 @@ class datastream(object):
 
         return mean, std
 
+    ## Subtracts the mean from each element in the dataset and divides each by the standard deviations
     def normalize(self, mean, std):
         for i in range(len(self.album_stream)):
             for j in range(self.lengths[i]):

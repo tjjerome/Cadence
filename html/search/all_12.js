@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['target',['target',['../classmodel_1_1dRNN.html#ae104972483f06abf155f513701861466',1,'model.dRNN.target()'],['../namespacemain.html#a7a716e67103ba3211a4e0eac4b5e3430',1,'main.target()']]],
+  ['targets',['targets',['../classreader_1_1datastream.html#a836d2e741712226c7b5fbef6b993b937',1,'reader::datastream']]],
+  ['test',['test',['../namespacegenerate__dataset.html#a8c6e10acdf7c4d75ad9b2dd68c47875a',1,'generate_dataset']]],
+  ['test_5fdata',['test_data',['../namespacemain.html#a6a4484643384fd61337a02526369525a',1,'main']]],
+  ['test_5ferr',['test_err',['../namespacemain.html#ace6de307522509aa73dae83c3b81b0aa',1,'main']]],
+  ['test_5finput',['test_input',['../namespacemain.html#a577dab76452ac65e39e6dbf1cecf51bb',1,'main']]],
+  ['test_5flength',['test_length',['../namespacemain.html#a2dd441a548a2ab5949398e8335f33e55',1,'main']]],
+  ['test_5fn',['test_n',['../namespacegenerate__dataset.html#a62d786219fea6e5db98eae89fcc19dc6',1,'generate_dataset']]],
+  ['test_5ftarget',['test_target',['../namespacemain.html#a603806d24d486231f3eb7d9f70d5acf9',1,'main']]],
+  ['tracks',['tracks',['../namespacegenerate__dataset.html#a724cadbbfc09963626330e86e5e3bd57',1,'generate_dataset']]],
+  ['train',['train',['../namespacegenerate__dataset.html#a097e819444931ce14362f9e5798af796',1,'generate_dataset']]],
+  ['train_5fdata',['train_data',['../namespacemain.html#aba5f8526d07b1e8c22cb7748368eaa3f',1,'main']]],
+  ['train_5ferr',['train_err',['../namespacemain.html#ac35fcb704aff23e8cb91ee9011d0f1e8',1,'main']]],
+  ['train_5finput',['train_input',['../namespacemain.html#a272d14d46db01c9ec32b4574813eea39',1,'main']]],
+  ['train_5flength',['train_length',['../namespacemain.html#a5a4d7d2b72b217b2b445589dd8cd95d2',1,'main']]],
+  ['train_5fn',['train_n',['../namespacegenerate__dataset.html#a5ffa5bd8395519707bcb1ec00fe62248',1,'generate_dataset']]],
+  ['train_5ftarget',['train_target',['../namespacemain.html#aa9e2d4b14fe5f1ee84b7a0fb9b2817dd',1,'main']]],
+  ['training_5fsteps',['training_steps',['../classconfig_1_1config.html#a94d1b2005c8f57d5c7707cd8732c0254',1,'config::config']]],
+  ['translate_5fdataset',['translate_dataset',['../namespacetranslate__dataset.html',1,'']]]
+];
