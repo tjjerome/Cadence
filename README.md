@@ -6,7 +6,9 @@ The program is currently UNFINISHED. It is still learning to unshuffle albums, w
 ## Dependencies
 
 <a href="https://www.tensorflow.org/install/">Tensorflow v1.7.0 or greater</a>
+
 <a href="http://spotipy.readthedocs.io/en/latest/#installation">Spotipy</a> - Only needed to generate new data
+
 NumPy
 
 ## Usage
