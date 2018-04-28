@@ -3,7 +3,7 @@ class config(object):
                   #Do not change unless the API updates
   batch_size = 300
   training_steps = 250000
-  entropy_saturation = 62500
+  entropy_saturation = 12000
   hidden_size = 1000
   learning_rate = 0.001
   keep_prob = 0.5
