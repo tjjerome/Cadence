@@ -9,6 +9,8 @@ The program is currently UNFINISHED. It is still learning to unshuffle albums, w
 
 <a href="http://spotipy.readthedocs.io/en/latest/#installation">Spotipy</a> - Only needed to generate new data
 
+Python 3.0 or greater
+
 NumPy
 
 ## Usage
