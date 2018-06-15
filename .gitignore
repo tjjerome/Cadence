@@ -106,3 +106,4 @@ credentials
 *.json
 *.csv
 *.bak
+my-model*

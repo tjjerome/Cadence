@@ -1,8 +1,0 @@
-import pickle
-import json
-import sys
-
-fin.open('test', 'rb')
-fout.open('test2.json', 'w')
-
-json.dump(pickle.load(fin), fout, indent=4)

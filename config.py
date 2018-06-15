@@ -10,7 +10,7 @@ class config(object):
   ## The number of albums to train on at one time
   batch_size = 300
   ## The number of optimization loops to run
-  training_steps = 250000
+  training_steps = 1000000
   ## The step when the input reaches maximum entropy.
   #  Should be no greater than training_steps / 4
   entropy_saturation = 12000

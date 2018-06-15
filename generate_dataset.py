@@ -29,7 +29,7 @@ def get_artists(uri):
             if not id in unique:
                 ids.append(artist['id'])
                 unique.add(id)
-                if len(unique) >= 100:
+                if len(unique) >= 200:
                     full = True
                 else:
                     related_artists = sp.artist_related_artists(id)['artists']
@@ -112,7 +112,9 @@ for artist in artists:
                 track.pop('track_href', None)
                 track.pop('analysis_url', None)
                 track.pop('uri', None)
-            if len(track) != 14: bad_track = True
+                if len(track) != 14: bad_track = True
+            else:
+                bad_track = True
             
         # toss the album if there is a bad track
         if bad_track: continue

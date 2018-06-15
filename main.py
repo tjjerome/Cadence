@@ -43,6 +43,9 @@ m = dRNN(x, y, l, config())
 ## A Tensorflow variable initializer
 init = tf.global_variables_initializer()
 
+## A Tensorflow saver
+saver = tf.train.Saver(max_to_keep=2)
+
 ## A Tensorflow session
 sess = tf.Session()
 
@@ -74,7 +77,10 @@ for step in range(steps):
         test_err = sess.run(m.error,
                              {x:test_data, y:test_target, l:test_length})
         file.write('{:3.10f}, {:3.10f}\n'.format(train_err, test_err))
-        print('Epoch {:2d}'.format(step))
+        print('Epoch {:2d} - Error {:3.1f}%'.format(step, 100*test_err))
+
+    if step % 1000 == 0:
+        saver.save(sess, './my-model', global_step=step)
 
 train_err = sess.run(m.error, {x:train_data, y:train_target, l:train_length})
 test_err = sess.run(m.error, {x:test_data, y:test_target, l:test_length})
